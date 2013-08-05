@@ -6,11 +6,6 @@ Rectangle {
     height: 360
     color: "#00B000"
     
-    Image {
-        id: imageSrc
-        source: "gradient.png"
-    }
-    
     ShaderEffect {
         id: mandelbrot
         anchors.fill: parent
@@ -20,8 +15,6 @@ Rectangle {
         property real offsetX: 0
         property real offsetY: 0
         
-        property var src: imageSrc
-        
         fragmentShader: "
             varying vec2 qt_TexCoord0;
             uniform float qt_Opacity;
@@ -30,7 +23,6 @@ Rectangle {
             uniform float offsetX;
             uniform float offsetY;
             uniform float scale;
-            uniform sampler2D src;
 
             void main() {
                 vec2 p = ((qt_TexCoord0 - 0.5) * vec2(width, height) - vec2(offsetX, offsetY)) * scale;
@@ -47,8 +39,7 @@ Rectangle {
                 }
                 
                 float value = (i == count) ? 0.0 : float(i) / float(count);
-                gl_FragColor = texture2D(src, vec2(value, 0));
-                //gl_FragColor = vec4(value, value, value, 1.0);
+                gl_FragColor = vec4(value, value, sqrt(value), 1.0);
             }"
     }
     
@@ -69,7 +60,6 @@ Rectangle {
             if (pressedButtons == Qt.LeftButton) {
                 var dx = mouseX - prevX
                 var dy = mouseY - prevY
-                console.log(dx)
                 mandelbrot.offsetX = mandelbrot.offsetX + dx
                 mandelbrot.offsetY = mandelbrot.offsetY + dy
             }
