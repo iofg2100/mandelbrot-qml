@@ -2,8 +2,8 @@ import QtQuick 2.0
 
 Rectangle {
     id: rect
-    width: 360
-    height: 360
+    width: 512
+    height: 512
     color: "#00B000"
     
     ShaderEffect {
@@ -33,12 +33,14 @@ Rectangle {
                     vec2 z2;
                     z2.x = z.x * z.x - z.y * z.y;
                     z2.y = 2.0 * z.x * z.y;
-                    z2 += p;
+                    z2 = z2 + p;
                     if (length(z2) > 4.0) break;
                     z = z2;
                 }
                 
-                float value = (i == count) ? 0.0 : float(i) / float(count);
+                float value = float(i) / float(count);
+                //float value = (i == count) ? 0.0 : float(i) / float(count);
+                value = 1.0 - value;
                 gl_FragColor = vec4(value, value, sqrt(value), 1.0);
             }"
     }
