@@ -6,6 +6,11 @@ Rectangle {
     height: 360
     color: "#00B000"
     
+    Image {
+        id: imageSrc
+        source: "gradient.png"
+    }
+    
     ShaderEffect {
         id: mandelbrot
         anchors.fill: parent
@@ -15,6 +20,8 @@ Rectangle {
         property real offsetX: 0
         property real offsetY: 0
         
+        property var src: imageSrc
+        
         fragmentShader: "
             varying vec2 qt_TexCoord0;
             uniform float qt_Opacity;
@@ -23,23 +30,25 @@ Rectangle {
             uniform float offsetX;
             uniform float offsetY;
             uniform float scale;
+            uniform sampler2D src;
 
             void main() {
                 vec2 p = ((qt_TexCoord0 - 0.5) * vec2(width, height) - vec2(offsetX, offsetY)) * scale;
                 vec2 z = p;
                 int i;
-                int count = 100;
+                int count = 256;
                 for (i = 0; i < count; ++i) {
                     vec2 z2;
-                    z2.x = z.x * z.x - z.y * z.y + p.x;
-                    z2.y = 2.0 * z.x * z.y + p.y;
+                    z2.x = z.x * z.x - z.y * z.y;
+                    z2.y = 2.0 * z.x * z.y;
+                    z2 += p;
                     if (length(z2) > 4.0) break;
                     z = z2;
                 }
                 
                 float value = (i == count) ? 0.0 : float(i) / float(count);
-
-                gl_FragColor = vec4(value, value, value, 1.0);
+                gl_FragColor = texture2D(src, vec2(value, 0));
+                //gl_FragColor = vec4(value, value, value, 1.0);
             }"
     }
     
