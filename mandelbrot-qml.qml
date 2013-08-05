@@ -7,19 +7,25 @@ Rectangle {
     color: "#00B000"
     
     ShaderEffect {
-        width: rect.width
-        height: rect.height
+        id: mandelbrot
+        anchors.fill: parent
         property real scale: 0.01
+        property real scaleOrigin: 0.01
+        
+        property real offsetX: 0
+        property real offsetY: 0
         
         fragmentShader: "
             varying vec2 qt_TexCoord0;
             uniform float qt_Opacity;
             uniform float width;
             uniform float height;
+            uniform float offsetX;
+            uniform float offsetY;
             uniform float scale;
 
             void main() {
-                vec2 p = (qt_TexCoord0 - 0.5) * vec2(width, height) * scale;
+                vec2 p = ((qt_TexCoord0 - 0.5) * vec2(width, height) - vec2(offsetX, offsetY)) * scale;
                 vec2 z = p;
                 int i;
                 int count = 100;
@@ -35,5 +41,40 @@ Rectangle {
 
                 gl_FragColor = vec4(value, value, value, 1.0);
             }"
+    }
+    
+    MouseArea {
+        anchors.fill: parent
+        
+        property int prevX
+        property int prevY
+        property int scaleLevel: 0
+        
+        onPressed: {
+            prevX = mouseX
+            prevY = mouseY
+        }
+        
+        onPositionChanged: {
+            
+            if (pressedButtons == Qt.LeftButton) {
+                var dx = mouseX - prevX
+                var dy = mouseY - prevY
+                console.log(dx)
+                mandelbrot.offsetX = mandelbrot.offsetX + dx
+                mandelbrot.offsetY = mandelbrot.offsetY + dy
+            }
+            
+            prevX = mouseX
+            prevY = mouseY
+        }
+        
+        onWheel: {
+            scaleLevel = scaleLevel + wheel.pixelDelta.y
+            var levelFactor = 0.01;
+            mandelbrot.scale = mandelbrot.scaleOrigin * Math.pow(2.0, scaleLevel * levelFactor);
+            mandelbrot.offsetX = mandelbrot.offsetX * Math.pow(2.0, -wheel.pixelDelta.y * levelFactor)
+            mandelbrot.offsetY = mandelbrot.offsetY * Math.pow(2.0, -wheel.pixelDelta.y * levelFactor)
+        }
     }
 }
